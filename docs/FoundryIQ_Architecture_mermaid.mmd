@@ -1,0 +1,55 @@
+flowchart TB
+
+  SRC["<b>① SOURCE — any system that can export a metadata table</b><br/><b>Metadata table</b> &nbsp;·&nbsp; one row per document &nbsp;&nbsp;+&nbsp;&nbsp; <b>the documents</b><br/><i>SharePoint · DMS · contracts DB · data catalogue</i>"]
+
+  PREP["<b>② BUILD — your pipeline, your index</b><br/>extract text &nbsp;·&nbsp; chunk to ~1,500 chars &nbsp;·&nbsp; embed title + content<br/><b>attach the document's metadata to EVERY chunk</b>"]
+
+  subgraph IDX["③ INDEX &nbsp; — &nbsp; pir-reviews, one Azure AI Search index"]
+    direction LR
+    CHUNKS["chunk 0 &nbsp;│&nbsp; 10 metadata fields &nbsp;│&nbsp; vector<br/>chunk 1 &nbsp;│&nbsp; 10 metadata fields &nbsp;│&nbsp; vector<br/>chunk n &nbsp;│&nbsp; 10 metadata fields &nbsp;│&nbsp; vector<br/><i>every chunk repeats its parent's metadata</i>"]
+    SEM["<b>2 semantic configurations</b><br/>content-only<br/>metadata as keyword fields"]
+  end
+
+  subgraph KS["④ KNOWLEDGE SOURCES &nbsp; — &nbsp; same index, two configurations"]
+    direction LR
+    KSB["<b>pir-ks-baseline</b><br/>searchFields: title, content<br/>content-only semantic config<br/>no query hints"]
+    KSM["<b>pir-ks-metadata</b><br/>searchFields: + all metadata fields<br/>metadata semantic config<br/><b>query hints: 5 boosts · 4 filters</b>"]
+  end
+
+  subgraph KB["⑤ KNOWLEDGE BASES &nbsp; — &nbsp; Foundry IQ"]
+    direction LR
+    KBB["<b>pir-kb-baseline</b> &nbsp;·&nbsp; <i>behaves like a native connector</i>"]
+    KBM["<b>pir-kb-metadata</b> &nbsp;·&nbsp; + retrieval instructions"]
+  end
+
+  AGENT["<b>Agents &nbsp;·&nbsp; Copilot Studio &nbsp;·&nbsp; apps</b><br/>retrieve API &nbsp;·&nbsp; MCP endpoint"]
+
+  MODELS["<b>Foundry models</b><br/>text-embedding-3-small &nbsp;·&nbsp; gpt-5.4-mini"]
+
+  SRC --> PREP
+  PREP -->|"chunk documents + vectors"| IDX
+  IDX --> KSB
+  IDX --> KSM
+  KSB --> KBB
+  KSM --> KBM
+  KBB --> AGENT
+  KBM --> AGENT
+
+  PREP -.->|"<b>1.</b> embeddings at index time"| MODELS
+  MODELS -.->|"<b>2.</b> query planning + subquery vectors<br/><i>called by the search service itself</i>"| KS
+
+  classDef src fill:#FFF7ED,stroke:#EA580C,stroke-width:2px,color:#1F2937
+  classDef build fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#1F2937
+  classDef index fill:#ECFDF5,stroke:#059669,stroke-width:2px,color:#1F2937
+  classDef base fill:#F3F4F6,stroke:#9CA3AF,stroke-width:2px,color:#374151
+  classDef meta fill:#DBEAFE,stroke:#2563EB,stroke-width:3px,color:#1F2937
+  classDef model fill:#FDF2F8,stroke:#DB2777,stroke-width:2px,color:#1F2937
+  classDef agent fill:#F5F3FF,stroke:#7C3AED,stroke-width:2px,color:#1F2937
+
+  class SRC src
+  class PREP build
+  class CHUNKS,SEM index
+  class KSB,KBB base
+  class KSM,KBM meta
+  class MODELS model
+  class AGENT agent

@@ -281,7 +281,7 @@ Delete knowledge bases before their knowledge sources, and knowledge sources bef
 | `sample_data/pdfs/` | Synthetic review PDFs |
 | `sample_data/generate_sample_data.py` | Regenerates the sample data |
 | `documents.json`, `metadata_values.json` | Prepared from the sample data |
-| `docs/FoundryIQ_Architecture.png` / `.svg` | Architecture diagram |
+| `docs/FoundryIQ_Architecture.png` / `.svg` | Architecture diagram ([docs/](docs/)) |
 
 ## References
 - [Create a search index knowledge source, including query hints](https://learn.microsoft.com/en-us/azure/search/agentic-knowledge-source-how-to-search-index)
