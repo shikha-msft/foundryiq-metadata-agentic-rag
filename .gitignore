@@ -1,0 +1,27 @@
+# Secrets and local configuration
+.env
+
+# Generated at run time
+payloads/
+results.json
+
+# Blog drafts and assets, not part of the sample
+blog/
+*.docx
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.Python
+*.egg-info/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Office lock files
+~$*
