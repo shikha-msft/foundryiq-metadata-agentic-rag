@@ -38,6 +38,22 @@ this POC makes Foundry IQ use it.
 profiles (including `defaultScoringProfile`), so field weights in a scoring profile have
 no effect on results returned through a Foundry IQ knowledge base.
 
+## Architecture
+
+![Metadata-aware retrieval with Azure AI Search and Foundry IQ: a SharePoint library's documents and metadata columns feed an ingestion pipeline that attaches the metadata to every chunk; the resulting Azure AI Search index is read by two knowledge sources and two Foundry IQ knowledge bases, which serve agents through the retrieve API and MCP endpoint. Foundry models are called twice, once by the pipeline for embeddings and once by the search service itself for query planning.](docs/FoundryIQ_Architecture.png)
+
+Azure AI Search holds the metadata; Foundry IQ decides when to use it. The grey path is
+the baseline, where metadata plays no part in ranking; the blue path is metadata-aware.
+Both read the same index, so any difference in results comes from the metadata.
+
+Note the two numbered arrows to the models. They are different callers. This POC embeds
+chunks at index time with your credentials, but the **search service itself** calls the
+models at query time, to vectorise subqueries and run query planning, and it authenticates
+as itself. That is why Part A3 gives the search service's managed identity the *Cognitive
+Services User* role.
+
+Editable source: [`docs/FoundryIQ_Architecture.svg`](docs/FoundryIQ_Architecture.svg).
+
 ## How the test works
 
 Both knowledge bases read **the same index**. The only difference is whether metadata is used:
@@ -265,6 +281,7 @@ Delete knowledge bases before their knowledge sources, and knowledge sources bef
 | `sample_data/pdfs/` | Synthetic review PDFs |
 | `sample_data/generate_sample_data.py` | Regenerates the sample data |
 | `documents.json`, `metadata_values.json` | Prepared from the sample data |
+| `docs/FoundryIQ_Architecture.png` / `.svg` | Architecture diagram |
 
 ## References
 - [Create a search index knowledge source, including query hints](https://learn.microsoft.com/en-us/azure/search/agentic-knowledge-source-how-to-search-index)
